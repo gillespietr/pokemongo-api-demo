@@ -4,18 +4,33 @@ import struct
 import json
 import argparse
 import pokemon_pb2
+try:
+    import androidhelper as android
+    IS_ANDROID = True
+except ImportError:
+    IS_ANDROID = False
 
 from datetime import datetime
 from geopy.geocoders import GoogleV3
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-
-
+try:
+    from requests.packages.urllib3.exceptions import InsecureRequestWarning
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+except ImportError:
+    from urllib3.exceptions import InsecureRequestWarning
+    import urllib3
+    urllib3.disable_warnings(InsecureRequestWarning)
 
 API_URL = 'https://pgorelease.nianticlabs.com/plfe/rpc'
 LOGIN_URL = 'https://sso.pokemon.com/sso/login?service=https%3A%2F%2Fsso.pokemon.com%2Fsso%2Foauth2.0%2FcallbackAuthorize'
 LOGIN_OAUTH = 'https://sso.pokemon.com/sso/oauth2.0/accessToken'
 PTC_CLIENT_SECRET = 'w8ScCUXJQc6kXKw8FiOhd8Fixzht18Dq3PEVkUCP5ZPxtgyWsbTvWHFLm2wNY0JR'
+
+####################################
+# Replace these with your own info!
+####################################
+USERNAME = 'USERNAME'
+PASSWORD = 'PASSWORD'
+LOCATION = 'LOCATION'
 
 SESSION = requests.session()
 SESSION.headers.update({'User-Agent': 'Niantic App'})
@@ -148,14 +163,28 @@ def login_ptc(username, password):
 
 
 def main():
+    global IS_ANDROID, USERNAME, PASSWORD, LOCATION
+    if IS_ANDROID:
+        droid = android.Android()
+        droid.startLocating()
+        my_loc = droid.getLastKnownLocation()
+        droid.stopLocating()
+        my_long = my_loc.result['gps']['longitude']
+        my_lat = my_loc.result['gps']['latitude']
+        LOCATION = str(my_lat) + ', ' + str(my_long)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("-u", "--username", help="PTC Username", required=True)
-    parser.add_argument("-p", "--password", help="PTC Password", required=True)
-    parser.add_argument("-l", "--location", help="Location", required=True)
+    parser.add_argument("-u", "--username", help="PTC Username", default=USERNAME, required=False)
+    parser.add_argument("-p", "--password", help="PTC Password", default=PASSWORD, required=False)
+    parser.add_argument("-l", "--location", help="Location", default=LOCATION, required=False)
     parser.add_argument("-d", "--debug", help="Debug Mode", action='store_true')
     parser.add_argument("-s", "--client_secret", help="PTC Client Secret")
     parser.set_defaults(DEBUG=True)
     args = parser.parse_args()
+
+    if args.username == 'USERNAME' or args.password == 'PASSWORD' or args.location == 'LOCATION':
+        print 'ERROR: Specify your username/password/location at the top of main.py!'
+        return
 
     if args.debug:
         global DEBUG
