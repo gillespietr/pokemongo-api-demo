@@ -254,7 +254,7 @@ def main():
         my_loc = droid.getLastKnownLocation()
         droid.stopLocating()
 
-        loc_src = min(my_loc.result, key=lambda x: my_loc.result[x]['accuracy'])
+        loc_src = min(my_loc.result, key=lambda x: my_loc.result[x]['accuracy'] if my_loc.result[x] is not None else float('inf'))
         my_long = my_loc.result[loc_src]['longitude']
         my_lat = my_loc.result[loc_src]['latitude']
         LOCATION = str(my_lat) + ', ' + str(my_long)
