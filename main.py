@@ -268,7 +268,7 @@ def main():
     parser.add_argument("-l", "--location", help="Location", default=LOCATION, required=False)
     parser.add_argument("-d", "--debug", help="Debug Mode", action='store_true')
     parser.add_argument("-s", "--client_secret", help="PTC Client Secret")
-    parser.set_defaults(DEBUG=True)
+    parser.set_defaults(DEBUG=False)
     args = parser.parse_args()
 
     if args.username == 'USERNAME' or args.password == 'PASSWORD' or args.location == 'LOCATION':
